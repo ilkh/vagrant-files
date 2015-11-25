@@ -1,0 +1,19 @@
+---
+- name: Update apt cache
+  apt: update_cache=yes
+  sudo: yes
+
+- name: Install the Python MySQLB module
+  apt: name=python-mysqldb state=present
+  sudo: yes
+
+- name: Install mariadb server 
+  apt: name={{ item }} state=present
+  with_items:
+      - mariadb-server
+      - mariadb-client
+  sudo: yes
+
+- name: Enable mariadb server
+  service: name=mysql state=started enabled=true
+  sudo: yes

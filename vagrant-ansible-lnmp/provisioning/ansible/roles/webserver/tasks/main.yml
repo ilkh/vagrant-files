@@ -1,0 +1,60 @@
+---
+- name: Update apt cache
+  apt: update_cache=yes
+  sudo: yes
+
+- name: Install nginx
+  apt: name=nginx state=present
+  sudo: yes
+
+- name: Install php5-fpm
+  apt: name=php5-fpm state=present
+  sudo: yes
+
+- name: Install php5 dependencies for sql and drupal7
+  apt: name={{ item }} state=present
+  sudo: yes
+  with_items:
+      - php5-mysqlnd
+      - php5-curl
+      - php5-gd
+      - php5-intl
+      - php5-imagick
+      - php5-imap
+      - php5-mcrypt
+      - php5-memcache
+      - php5-ming
+      - php5-ps
+      - php5-pspell
+      - php5-recode
+      - php5-sqlite
+      - php5-tidy
+      - php5-xmlrpc
+      - php5-xsl
+      - php5-apcu
+      - php-pear
+
+- name: Copy nginx config
+  copy: src=site.conf dest=/etc/nginx/sites-available/site.conf
+  sudo: yes
+
+- name: Create site directory
+  file: path=/var/www/site/ state=directory mode=0755 owner=www-data
+  sudo: yes
+
+- name: Enable nginx site
+  file: src=/etc/nginx/sites-available/site.conf dest=/etc/nginx/sites-enabled/site.conf state=link
+  sudo: yes
+  notify: reload nginx
+
+- name: Copy info.php
+  copy: src=info.php dest=/var/www/site/info.php mode=0664
+  sudo: yes
+
+- name: Start php5-fpm
+  service: name=php5-fpm state=started enabled=true
+  sudo: yes
+
+- name: Start nginx
+  service: name=nginx state=started enabled=true
+  sudo: yes
